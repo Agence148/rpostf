@@ -7,7 +7,7 @@ require File.join(File.dirname(__FILE__), %w(array))
 require File.join(File.dirname(__FILE__), %w(rpostf params))
 
 # Rpostf -- Ruby POST Finance
-# a ruby library for the "Post Finance (SWISS POST)" payment gateway 
+# a ruby library for the "Post Finance (SWISS POST)" payment gateway
 #
 # usage:
 #
@@ -39,18 +39,18 @@ require File.join(File.dirname(__FILE__), %w(rpostf params))
 class Rpostf
 
   class MissingParameter < StandardError
-    
+
     def initialize(param, logger=nil)
       @param = param
       @log = logger || Logger.new(STDOUT)
     end
-    
+
     def message
       "You have to provide #{@param}."
     end
-    
+
   end
-  
+
   attr_accessor :config
 
   DEFAULT_OPTIONS = {
@@ -62,7 +62,7 @@ class Rpostf
     #:local_protocol => 'https',
     #:local_route => '/postfinance_payments'
   }
-  
+
   # mandatory keys for +options+ are
   #  +:login+
   #
@@ -81,7 +81,7 @@ class Rpostf
   #  +:locale_route+ default is '/postfinance_payments'
   #
   def initialize(options={})
-    options.symbolize_keys!
+    options.symbolize_keys! if options.respond_to?(:symbolize_keys!)
     #check_keys options, :login
     self.config = DEFAULT_OPTIONS.merge(options)
   end
@@ -90,7 +90,7 @@ class Rpostf
   #
   # hands options over to params_for_post
   def url_for_get(options={})
-    options.symbolize_keys!
+    options.symbolize_keys! if options.respond_to?(:symbolize_keys!)
     options = params_for_post(options)
     parameters = []
     options.each { |p| parameters << p * '=' }
@@ -109,7 +109,7 @@ class Rpostf
     Params.new(params).debug(passwd)
   end
 
-  # returns a hash with merge_hash merged into default options 
+  # returns a hash with merge_hash merged into default options
   def default_options(merge_hash={})
     defaults = config.dup
     defaults[:PSPID] = defaults.delete(:login)
@@ -130,7 +130,7 @@ class Rpostf
   #  +:accepturl+
   #
   def params_for_post(options={})
-    options.symbolize_keys!
+    options.symbolize_keys! if options.respond_to?(:symbolize_keys!)
     #check_keys options, :orderID, :amount
     opts = default_options(options)
     opts[:SHASign] = signature(opts)
@@ -138,15 +138,15 @@ class Rpostf
   end
 
   # returns a string containing html markup
-  # 
+  #
   # hands options over to params_for_post
   #
   #  +:submit_value+ is the caption of the submit button
   def form_for_post(options={})
-    options.symbolize_keys!
+    options.symbolize_keys! if options.respond_to?(:symbolize_keys!)
     submit_value = options.delete(:submit_value) || 'Checkout with Post Finance'
     options = params_for_post(options)
-    (["<form action=\"#{config[:base_url]}\" method=\"post\">"] + 
+    (["<form action=\"#{config[:base_url]}\" method=\"post\">"] +
      options.map { |n, v| hidden_field(n, v) } +
      ["<input type=\"submit\" value=\"#{submit_value}\" />", '</form>']) * "\n"
   end
@@ -154,11 +154,11 @@ class Rpostf
   # verifies a signature
   def signature_valid?(params, sha1out=nil)
     ps = params.dup
-    ps.symbolize_keys!
+    ps.symbolize_keys! if options.respond_to?(:symbolize_keys!)
     sha1out = ps.delete(:SHASIGN) if sha1out.nil?
     sha1out == signature(ps, :sha1outsig)
   end
-  
+
   # ensures that the passed options hash includes all mandatory keys
   def check_keys(*args)
     options = args.shift
